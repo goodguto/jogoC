@@ -53,6 +53,13 @@ int main(void)
         if (IsKeyDown(KEY_LEFT)){ 
             player1.x -= speed;
         }
+        if (IsKeyDown(KEY_DOWN)){
+            player1.y +=speed;
+        }
+
+        if (IsKeyPressed(KEY_UP) && noChao1) {
+            velocidadeY1 = -jump; 
+        }
 
         if (player2.y >= tamAltura - groundAltura - size) {
             player2.y = tamAltura - groundAltura - size;
@@ -60,9 +67,6 @@ int main(void)
             noChao2 = true;
         } else {
             noChao2 = false;
-        }
-        if (IsKeyPressed(KEY_UP) && noChao1) {
-            velocidadeY1 = -jump; 
         }
 
         if(IsKeyDown(KEY_W)&& noChao2){
