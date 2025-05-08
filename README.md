@@ -14,5 +14,5 @@
 |-----------------------------|------------------|
 |Augusto Malheiros de Souza   |ams10@cesar.school|
 |Heloísa Borba de Barros Silva|hbbs@cesar.school |
-|João Pedro Dornelas          |
+|João Pedro Dornelas          |jprda@cesar.school|
 
