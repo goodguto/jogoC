@@ -37,7 +37,7 @@ int main(void) {
             UpdateFisica(&player1, blocos, 3);
             AtualizarCamera(&camera, player1.pos);
             UpdateFisica(&player2, blocos, 3);
-            AtualizarCamera(&camera, player1.pos);
+            AtualizarCamera(&camera, player2.pos);
 
             if (escolha == 1) UpdateControles(&player1, 1);
             if (escolha == 2) UpdateControles(&player2, 2);

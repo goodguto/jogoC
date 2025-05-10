@@ -45,9 +45,9 @@ void UpdateControles(Player *p, int tipo) {
     const float jump = 9.0f;
 
     if (tipo == 1) {
-        if (IsKeyDown(KEY_RIGHT)) p->pos.x += speed;
-        if (IsKeyDown(KEY_LEFT)) p->pos.x -= speed;
-        if (IsKeyPressed(KEY_UP) && p->noChao) p->velocidadeY = -jump;
+        if (IsKeyDown(KEY_D)) p->pos.x += speed;
+        if (IsKeyDown(KEY_A)) p->pos.x -= speed;
+        if (IsKeyPressed(KEY_W) && p->noChao) p->velocidadeY = -jump;
     } else if (tipo == 2) {
         if (IsKeyDown(KEY_D)) p->pos.x += speed;
         if (IsKeyDown(KEY_A)) p->pos.x -= speed;
