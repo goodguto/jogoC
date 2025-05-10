@@ -35,7 +35,9 @@ int main(void) {
             if (IsKeyPressed(KEY_TWO)) escolha = 2;
         } else {
             UpdateFisica(&player1, blocos, 3);
+            AtualizarCamera(&camera, player1.pos);
             UpdateFisica(&player2, blocos, 3);
+            AtualizarCamera(&camera, player1.pos);
 
             if (escolha == 1) UpdateControles(&player1, 1);
             if (escolha == 2) UpdateControles(&player2, 2);

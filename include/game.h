@@ -16,6 +16,7 @@ typedef struct {
 } Player;
 
 void InitPlayers(Player *p1, Player *p2);
+void AtualizarCamera(Camera2D *camera, Vector2 playerPos);
 void UpdateFisica(Player *p, Rectangle *blocos, int numBlocos);
 void UpdateControles(Player *p, int controleTipo);
 void DesenharJogador(Player p);

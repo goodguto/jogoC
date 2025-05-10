@@ -9,7 +9,12 @@ void InitPlayers(Player *p1, Player *p2) {
     p2->velocidadeY = 0.0f;
     p2->noChao = false;
 }
-
+void AtualizarCamera(Camera2D *camera, Vector2 playerPos)
+{
+    Vector2 destino = { playerPos.x -100, playerPos.y -300}; // Centralizo
+    camera->target.x += (destino.x - camera->target.x) * 0.1f; // deixa a movimentação da camera mais suave
+    camera->target.y += (destino.y - camera->target.y) * 0.1f;
+}
 void UpdateFisica(Player *p, Rectangle *blocos, int numBlocos) {
     const float gravidade = 0.3f;
     p->velocidadeY += gravidade;
