@@ -1,5 +1,7 @@
 #include "raylib.h"
 #include "game.h"
+#include "enemy.h"
+
 
 int main(void) {
     InitWindow(LARGURA, ALTURA, "The Plumber Duo");
@@ -11,6 +13,7 @@ int main(void) {
     Texture2D ground, bloco;
     CarregarTexturas(&player1, &player2, &ground, &bloco);
     InitPlayers(&player1, &player2);
+    Enemy enemy1 = CarregarInimigo("assets/player_colision/enemys/enemy1/enemy1.json");
 
     int escolha = 0;
 
@@ -38,13 +41,17 @@ int main(void) {
             AtualizarCamera(&camera, player1.pos);
             UpdateFisica(&player2, blocos, 3);
             AtualizarCamera(&camera, player2.pos);
-
+            
             if (escolha == 1) UpdateControles(&player1, 1);
             if (escolha == 2) UpdateControles(&player2, 2);
-
+            
+            AtualizarInimigo(&enemy1);
+            
             DesenharCenario(ground, blocos, 3, bloco);
+            DesenharInimigo(enemy1);  // <- Depois do cenário
             if (escolha == 1) DesenharJogador(player1);
             if (escolha == 2) DesenharJogador(player2);
+            
         }
 
         EndMode2D();
@@ -52,6 +59,7 @@ int main(void) {
         EndDrawing();
     }
 
+    LiberarInimigo(&enemy1);
     LiberarTexturas(player1, player2, ground, bloco);
     CloseWindow();
     return 0;

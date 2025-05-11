@@ -1,0 +1,50 @@
+{
+    "sprite": "Enemy1",
+    "enemy1_walk": {
+        "right": [
+            "assets/player_colision/enemys/enemy1/enemy1pos1.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos2.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos3.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos4.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos5.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos6.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos7.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos8.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos9.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos10.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos11.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos12.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos13.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos14.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos15.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos16.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos17.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos18.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos19.png",
+            "assets/player_colision/enemys/enemy1/enemy1pos20.png"
+        ],
+        "left": [
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos1.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos2.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos3.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos4.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos5.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos6.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos7.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos8.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos9.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos10.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos11.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos12.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos13.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos14.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos15.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos16.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos17.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos18.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos19.png",
+            "assets/player_colision/enemys/enemy1/inverted/enemy1pos20.png"
+        ]
+    },
+    "frame_change": 0.10
+}

@@ -4,25 +4,35 @@ EXEC = main
 # Diretórios
 SRC_DIR = src
 OBJ_DIR = object
+LIB_DIR = lib
 
 # Compilador e flags
 CC = gcc
 CFLAGS = -Wall -Wextra -Isrc -Iinclude
 LDFLAGS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
-# Fontes e objetos
-SRC = $(wildcard $(SRC_DIR)/*.c)
+# Arquivos cJSON
+CJSON_SRC = $(LIB_DIR)/cjson.c
+CJSON_OBJ = $(OBJ_DIR)/cjson.o
+
+# Fontes e objetos (exclui cJSON.c para evitar duplicação)
+SRC = $(filter-out $(CJSON_SRC), $(wildcard $(SRC_DIR)/*.c))
 OBJ = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
 
 # Regra padrão
 all: $(EXEC)
 
 # Linkagem
-$(EXEC): $(OBJ)
-	$(CC) $(OBJ) -o $@ $(LDFLAGS)
+$(EXEC): $(OBJ) $(CJSON_OBJ)
+	$(CC) $(OBJ) $(CJSON_OBJ) -o $@ $(LDFLAGS)
 
 # Compilação dos .c em .o
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Compilação específica de cJSON
+$(CJSON_OBJ): $(CJSON_SRC)
 	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 

@@ -3,9 +3,9 @@
 
 #include "raylib.h"
 
-#define LARGURA 800
-#define ALTURA 450
-#define GROUND_ALTURA 22
+#define LARGURA 1920
+#define ALTURA 1080
+#define GROUND_ALTURA 10
 #define PLAYER_SIZE 40
 
 typedef struct {
@@ -14,6 +14,10 @@ typedef struct {
     bool noChao;
     Texture2D textura;
 } Player;
+
+
+extern Texture2D background;
+
 
 void InitPlayers(Player *p1, Player *p2);
 void AtualizarCamera(Camera2D *camera, Vector2 playerPos);

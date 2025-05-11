@@ -1,5 +1,11 @@
 #include "game.h"
 
+Texture2D background;
+Texture2D cloudCenterUp, cloudCenterDown;
+Texture2D cloudLeftUp, cloudLeftDown;
+Texture2D cloudRightUp, cloudRightDown;
+
+
 void InitPlayers(Player *p1, Player *p2) {
     p1->pos = (Vector2){ 200, ALTURA - GROUND_ALTURA - PLAYER_SIZE };
     p1->velocidadeY = 0.0f;
@@ -65,6 +71,7 @@ void DesenharJogador(Player p) {
 }
 
 void DesenharCenario(Texture2D ground, Rectangle *blocos, int numBlocos, Texture2D blocoImg) {
+    DrawTexture(background, 0, 0, WHITE);
     for (int x = 0; x < LARGURA; x += ground.width) {
         DrawTexture(ground, x, ALTURA - ground.height, WHITE);
     }
@@ -73,14 +80,8 @@ void DesenharCenario(Texture2D ground, Rectangle *blocos, int numBlocos, Texture
         DrawTextureEx(blocoImg, (Vector2){blocos[i].x, blocos[i].y}, 0.0f,
                       50.0f / blocoImg.width, WHITE);
     }
+    
 
-    // Nuvens
-    DrawCircle(150, 100, 20, WHITE);
-    DrawCircle(170, 90, 25, WHITE);
-    DrawCircle(190, 100, 20, WHITE);
-    DrawCircle(500, 80, 20, WHITE);
-    DrawCircle(520, 70, 25, WHITE);
-    DrawCircle(540, 80, 20, WHITE);
 }
 
 void CarregarTexturas(Player *p1, Player *p2, Texture2D *ground, Texture2D *bloco) {
@@ -88,6 +89,10 @@ void CarregarTexturas(Player *p1, Player *p2, Texture2D *ground, Texture2D *bloc
     p2->textura = LoadTexture("assets/player_colision/p2.png");
     *ground = LoadTexture("assets/map/ground1.png");
     *bloco = LoadTexture("assets/map/floatblock.png");
+
+    background = LoadTexture("assets/map/background.png");
+
+    
 }
 
 void LiberarTexturas(Player p1, Player p2, Texture2D ground, Texture2D bloco) {
@@ -95,4 +100,6 @@ void LiberarTexturas(Player p1, Player p2, Texture2D ground, Texture2D bloco) {
     UnloadTexture(p2.textura);
     UnloadTexture(ground);
     UnloadTexture(bloco);
+    UnloadTexture(background);
+
 }
