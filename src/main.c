@@ -1,8 +1,19 @@
 #include <stdio.h>
 #include "raylib.h"
-#include "game.h"
+#include "game.h" // Verifique se 'Player' tem o campo 'int moedas'
 
-void SalvarRanking(double tempoFinal);
+#define MAX_BLOCOS 1000
+#define MAX_MOEDAS 100
+
+typedef struct {
+    Rectangle rect;
+    bool coletada;
+} Moeda;
+
+Moeda moedas[MAX_MOEDAS];
+int numMoedas = 0;
+
+void SalvarRanking(int moedasColetadas);
 void MostrarRanking();
 
 int main(void) {
@@ -16,8 +27,9 @@ int main(void) {
     CarregarTexturas(&player1, &player2, &ground, &bloco, &cano);
 
     InitPlayers(&player1, &player2);
+    player1.moedas = 0;
+    player2.moedas = 0;
 
-    #define MAX_BLOCOS 1000
     Rectangle blocos[MAX_BLOCOS];
     int numBlocos = 0;
 
@@ -64,12 +76,7 @@ int main(void) {
             }
 
             for (int i = 0; i < totalOpcoesMenu; i++) {
-                Color cor;
-                if (i == menuIndex) {
-                    cor = RED;
-                } else {
-                    cor = DARKBLUE;
-                }
+                Color cor = (i == menuIndex) ? RED : DARKBLUE;
                 DrawText(opcoesMenu[i], 230, 200 + i * 40, 20, cor);
             }
 
@@ -85,9 +92,7 @@ int main(void) {
                     EndDrawing();
 
                     while (!WindowShouldClose()) {
-                        if (IsKeyPressed(KEY_ESCAPE)) {
-                            break;
-                        }
+                        if (IsKeyPressed(KEY_ESCAPE)) break;
                         BeginDrawing();
                         ClearBackground(SKYBLUE);
                         BeginMode2D(camera);
@@ -104,10 +109,28 @@ int main(void) {
             UpdateFisica(&player2, blocos, numBlocos);
             DesenharCenario(ground, blocos, numBlocos, bloco, cano);
 
-            if (escolha == 1) {
-                AtualizarCamera(&camera, player1.pos);
-            } else {
-                AtualizarCamera(&camera, player2.pos);
+            if (escolha == 1) AtualizarCamera(&camera, player1.pos);
+            else AtualizarCamera(&camera, player2.pos);
+
+            Vector2 posJogador = (escolha == 1) ? player1.pos : player2.pos;
+
+            // Verifica colisão com moedas
+            for (int i = 0; i < numMoedas; i++) {
+                if (!moedas[i].coletada) {
+                    Rectangle jogador = { posJogador.x, posJogador.y, PLAYER_SIZE, PLAYER_SIZE };
+                    if (CheckCollisionRecs(jogador, moedas[i].rect)) {
+                        moedas[i].coletada = true;
+                        if (escolha == 1) player1.moedas++;
+                        else player2.moedas++;
+                    }
+                }
+            }
+
+            // Desenhar moedas
+            for (int i = 0; i < numMoedas; i++) {
+                if (!moedas[i].coletada) {
+                    DrawRectangleRec(moedas[i].rect, YELLOW);
+                }
             }
 
             if (venceu) {
@@ -116,23 +139,22 @@ int main(void) {
                 DrawText(texto, 200, 100, 30, RED);
             }
 
-            Vector2 posJogador;
-            if (escolha == 1) {
-                posJogador = player1.pos;
-            } else {
-                posJogador = player2.pos;
-            }
-
             if (posJogador.y < alturaUltimoAndar - 100 && !baseFinalCriada) {
                 alturaUltimoAndar -= 100;
 
                 if (alturaUltimoAndar > -2500) {
                     GerarBlocosNivel(alturaUltimoAndar, blocos, &numBlocos);
+
+                    // Gerar moeda aleatória
+                    if (numMoedas < MAX_MOEDAS) {
+                        moedas[numMoedas].rect = (Rectangle){ GetRandomValue(100, 600), alturaUltimoAndar + 30, 20, 20 };
+                        moedas[numMoedas].coletada = false;
+                        numMoedas++;
+                    }
+
                 } else {
                     float yBase = alturaUltimoAndar;
                     float xBase[] = {280, 330, 380, 430};
-                    double tempoFinal = 0;
-                    bool venceu = false;
 
                     for (int i = 0; i < 4; i++) {
                         blocos[numBlocos++] = (Rectangle){ xBase[i], yBase, 50, 10 };
@@ -149,26 +171,20 @@ int main(void) {
                     if (blocos[i].y == alturaUltimoAndar && CheckCollisionRecs(jogador, blocos[i])) {
                         tempoFinal = GetTime() - tempoInicio;
                         venceu = true;
-                        SalvarRanking(tempoFinal);
+
+                        int moedasFinais = (escolha == 1) ? player1.moedas : player2.moedas;
+                        SalvarRanking(moedasFinais);
                         break;
                     }
                 }
             }
 
-            if (escolha == 1) {
-                UpdateControles(&player1, 1);
-            }
-            if (escolha == 2) {
-                UpdateControles(&player2, 2);
-            }
+            if (escolha == 1) UpdateControles(&player1, 1);
+            if (escolha == 2) UpdateControles(&player2, 2);
 
             DesenharCenario(ground, blocos, 3, bloco, cano);
-            if (escolha == 1) {
-                DesenharJogador(player1);
-            }
-            if (escolha == 2) {
-                DesenharJogador(player2);
-            }
+            if (escolha == 1) DesenharJogador(player1);
+            if (escolha == 2) DesenharJogador(player2);
         }
 
         EndMode2D();
@@ -181,14 +197,16 @@ int main(void) {
     return 0;
 }
 
-void SalvarRanking(double tempoFinal) {
+// Salvar ranking por moedas
+void SalvarRanking(int moedasColetadas) {
     FILE *arquivo = fopen("ranking.txt", "a");
     if (arquivo != NULL) {
-        fprintf(arquivo, "%.2f\n", tempoFinal);
+        fprintf(arquivo, "%d\n", moedasColetadas);
         fclose(arquivo);
     }
 }
 
+// Mostrar ranking por moedas
 void MostrarRanking() {
     FILE *arquivo = fopen("ranking.txt", "r");
     if (arquivo == NULL) {
@@ -196,16 +214,31 @@ void MostrarRanking() {
         return;
     }
 
-    char linha[100];
-    int y = 300;
-    int pos = 1;
-    while (fgets(linha, sizeof(linha), arquivo) && pos <= 5) {
-        char texto[120];
-        sprintf(texto, "%dº lugar: %s", pos, linha);
-        DrawText(texto, 250, y, 20, DARKBLUE);
-        y += 30;
-        pos++;
+    int valores[100];
+    int count = 0;
+
+    while (fscanf(arquivo, "%d", &valores[count]) == 1 && count < 100) {
+        count++;
+    }
+    fclose(arquivo);
+
+    // Ordenar em ordem decrescente (maior número de moedas no topo)
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = i + 1; j < count; j++) {
+            if (valores[j] > valores[i]) {
+                int temp = valores[i];
+                valores[i] = valores[j];
+                valores[j] = temp;
+            }
+        }
     }
 
-    fclose(arquivo);
+    int y = 300;
+    for (int i = 0; i < count && i < 5; i++) {
+        char texto[100];
+        sprintf(texto, "%dº lugar: %d moedas", i + 1, valores[i]);
+        DrawText(texto, 250, y, 20, DARKBLUE);
+        y += 30;
+    }
 }
+
