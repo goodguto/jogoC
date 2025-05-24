@@ -131,14 +131,13 @@ E para executar:
 
 ---
 
-
+[Vídeo do jogo](https://youtu.be/zY2CGH6Urwc?feature=shared)
 
 ## 🚀 Desenvolvido por:
 
 
 |Nome                         |Email da school   |
 |-----------------------------|------------------|
-|Augusto Malheiros de Souza   |ams10@cesar.school|
 |Heloísa Borba de Barros Silva|hbbs@cesar.school |
 |João Pedro Dornelas          |jprda@cesar.school|
 
