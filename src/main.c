@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #include "raylib.h"
 #include "game.h"
 
@@ -6,6 +8,14 @@
 #define MAX_MOEDAS 100
 #define MAX_INIMIGOS 50
 
+// ===== Lista encadeada =====
+typedef struct NodoRanking {
+    int moedas;
+    int tempo;
+    struct NodoRanking *prox;
+} NodoRanking;
+
+// ===== Moeda e Inimigo =====
 typedef struct {
     Rectangle rect;
     bool coletada;
@@ -16,12 +26,14 @@ typedef struct {
     bool ativo;
 } Inimigo;
 
-// Variáveis
+// Variáveis globais
 Moeda moedas[MAX_MOEDAS];
 int numMoedas = 0;
 
 Inimigo inimigos[MAX_INIMIGOS];
 int numInimigos = 0;
+
+NodoRanking *rankingHead = NULL;
 
 // Funções auxiliares
 void SalvarRanking(int moedasColetadas, int tempo);
@@ -29,9 +41,6 @@ void MostrarRanking();
 void GerarInimigo(float y);
 void ResetarJogo(Player *player1, Player *player2, Rectangle *blocos, int *numBlocos, float *alturaUltimoAndar, bool *baseFinalCriada, double *tempoInicio);
 
-// ===================================
-// Função principal
-// ===================================
 int main(void) {
     InitWindow(LARGURA, ALTURA, "The Plumber Duo");
 
@@ -41,15 +50,21 @@ int main(void) {
     Player player1, player2;
     Texture2D ground, bloco, cano;
     CarregarTexturas(&player1, &player2, &ground, &bloco, &cano);
-
     InitPlayers(&player1, &player2);
 
-    Rectangle blocos[MAX_BLOCOS];
+    // ===== Alocacao dinamica dos blocos =====
+    Rectangle *blocos = (Rectangle *)malloc(sizeof(Rectangle) * MAX_BLOCOS);
     int numBlocos = 0;
+
+    // ===== Matriz exemplo (alocacao dinamica) =====
+    int **matrizMapa = (int **)malloc(10 * sizeof(int *));
+    for (int i = 0; i < 10; i++) {
+        matrizMapa[i] = (int *)malloc(10 * sizeof(int));
+        for (int j = 0; j < 10; j++) matrizMapa[i][j] = 0;
+    }
 
     float alturaUltimoAndar;
     bool baseFinalCriada;
-
     double tempoInicio;
     int tempoFinal;
     bool venceu;
@@ -65,7 +80,6 @@ int main(void) {
         ClearBackground(SKYBLUE);
 
         if (escolha == 0) {
-            // MENU
             const char *opcoesMenu[] = {
                 "Jogar com Jogador 1 (Setas)",
                 "Jogar com Jogador 2 (WASD)",
@@ -89,7 +103,6 @@ int main(void) {
             if (IsKeyPressed(KEY_ENTER)) {
                 if (menuIndex == 0 || menuIndex == 1) {
                     escolha = (menuIndex == 0) ? 1 : 2;
-
                     ResetarJogo(&player1, &player2, blocos, &numBlocos, &alturaUltimoAndar, &baseFinalCriada, &tempoInicio);
                     venceu = false;
                 } else if (menuIndex == 2) {
@@ -99,12 +112,9 @@ int main(void) {
                         MostrarRanking();
                         DrawText("Pressione ESC para voltar", 10, 10, 20, DARKGRAY);
                         EndDrawing();
-
                         if (IsKeyPressed(KEY_ESCAPE)) break;
                     }
-                } else if (menuIndex == 3) {
-                    break;
-                }
+                } else if (menuIndex == 3) break;
             }
 
         } else {
@@ -117,20 +127,16 @@ int main(void) {
             Vector2 posJogador = (escolha == 1) ? player1.pos : player2.pos;
             AtualizarCamera(&camera, posJogador);
 
-            // Colisão com moedas
+            Rectangle jogador = { posJogador.x, posJogador.y, PLAYER_SIZE, PLAYER_SIZE };
+
             for (int i = 0; i < numMoedas; i++) {
-                if (!moedas[i].coletada) {
-                    Rectangle jogador = { posJogador.x, posJogador.y, PLAYER_SIZE, PLAYER_SIZE };
-                    if (CheckCollisionRecs(jogador, moedas[i].rect)) {
-                        moedas[i].coletada = true;
-                        if (escolha == 1) player1.moedas++;
-                        else player2.moedas++;
-                    }
+                if (!moedas[i].coletada && CheckCollisionRecs(jogador, moedas[i].rect)) {
+                    moedas[i].coletada = true;
+                    if (escolha == 1) player1.moedas++;
+                    else player2.moedas++;
                 }
             }
 
-            // Colisão com inimigos → MORREU → VOLTA PRO MENU
-            Rectangle jogador = { posJogador.x, posJogador.y, PLAYER_SIZE, PLAYER_SIZE };
             for (int i = 0; i < numInimigos; i++) {
                 if (inimigos[i].ativo && CheckCollisionRecs(jogador, inimigos[i].rect)) {
                     escolha = 0;
@@ -138,47 +144,36 @@ int main(void) {
                 }
             }
 
-            // Gerar andares
             if (posJogador.y < alturaUltimoAndar - 100 && !baseFinalCriada) {
                 alturaUltimoAndar -= 100;
 
                 if (alturaUltimoAndar > -2500) {
                     GerarBlocosNivel(alturaUltimoAndar, blocos, &numBlocos);
-
                     if (numMoedas < MAX_MOEDAS) {
                         moedas[numMoedas].rect = (Rectangle){ GetRandomValue(100, 600), alturaUltimoAndar + 30, 20, 20 };
                         moedas[numMoedas].coletada = false;
                         numMoedas++;
                     }
-
                     if ((int)(alturaUltimoAndar / 100) % 3 == 0 && GetRandomValue(0, 100) < 50) {
                         GerarInimigo(alturaUltimoAndar);
                     }
-
                 } else {
-                    float yBase = alturaUltimoAndar;
                     float xBase[] = {280, 330, 380, 430};
-
                     for (int i = 0; i < 4; i++) {
-                        blocos[numBlocos++] = (Rectangle){ xBase[i], yBase, 50, 10 };
+                        blocos[numBlocos++] = (Rectangle){ xBase[i], alturaUltimoAndar, 50, 10 };
                     }
-
                     baseFinalCriada = true;
                 }
             }
 
-            // Vitória
             if (baseFinalCriada && !venceu) {
                 for (int i = 0; i < numBlocos; i++) {
-                    if (blocos[i].y == alturaUltimoAndar) {
-                        Rectangle jogador = { posJogador.x, posJogador.y, PLAYER_SIZE, PLAYER_SIZE };
-                        if (CheckCollisionRecs(jogador, blocos[i])) {
-                            tempoFinal = (int)(GetTime() - tempoInicio);
-                            venceu = true;
-                            int moedasFinais = (escolha == 1) ? player1.moedas : player2.moedas;
-                            SalvarRanking(moedasFinais, tempoFinal);
-                            break;
-                        }
+                    if (blocos[i].y == alturaUltimoAndar && CheckCollisionRecs(jogador, blocos[i])) {
+                        tempoFinal = (int)(GetTime() - tempoInicio);
+                        venceu = true;
+                        int moedasFinais = (escolha == 1) ? player1.moedas : player2.moedas;
+                        SalvarRanking(moedasFinais, tempoFinal);
+                        break;
                     }
                 }
             }
@@ -186,36 +181,20 @@ int main(void) {
             if (escolha == 1) UpdateControles(&player1, 1);
             if (escolha == 2) UpdateControles(&player2, 2);
 
-            // Desenhar moedas
-            for (int i = 0; i < numMoedas; i++) {
-                if (!moedas[i].coletada) {
-                    DrawRectangleRec(moedas[i].rect, YELLOW);
-                }
-            }
+            for (int i = 0; i < numMoedas; i++) if (!moedas[i].coletada) DrawRectangleRec(moedas[i].rect, YELLOW);
+            for (int i = 0; i < numInimigos; i++) if (inimigos[i].ativo) DrawRectangleRec(inimigos[i].rect, RED);
 
-            // Desenhar inimigos
-            for (int i = 0; i < numInimigos; i++) {
-                if (inimigos[i].ativo) {
-                    DrawRectangleRec(inimigos[i].rect, RED);
-                }
-            }
-
-            // Desenhar jogador
             if (escolha == 1) DesenharJogador(player1);
             if (escolha == 2) DesenharJogador(player2);
 
             EndMode2D();
 
-            // Mensagem de vitória
             if (venceu) {
                 char texto[100];
                 sprintf(texto, "Parabéns! Tempo: %d segundos", tempoFinal);
                 DrawText(texto, 200, 100, 30, RED);
                 DrawText("Pressione ENTER para voltar ao menu", 200, 150, 20, DARKBLUE);
-
-                if (IsKeyPressed(KEY_ENTER)) {
-                    escolha = 0;
-                }
+                if (IsKeyPressed(KEY_ENTER)) escolha = 0;
             }
         }
 
@@ -223,26 +202,22 @@ int main(void) {
     }
 
     LiberarTexturas(player1, player2, ground, bloco, cano);
+    free(blocos);
+    for (int i = 0; i < 10; i++) free(matrizMapa[i]);
+    free(matrizMapa);
     CloseWindow();
     return 0;
 }
-
-// ===================================
-// Funções auxiliares
-// ===================================
 
 void ResetarJogo(Player *player1, Player *player2, Rectangle *blocos, int *numBlocos, float *alturaUltimoAndar, bool *baseFinalCriada, double *tempoInicio) {
     InitPlayers(player1, player2);
     player1->moedas = 0;
     player2->moedas = 0;
-
     *alturaUltimoAndar = ALTURA - GROUND_ALTURA - PLAYER_SIZE - 100;
     *baseFinalCriada = false;
-
     *numBlocos = 0;
     numMoedas = 0;
     numInimigos = 0;
-
     GerarBlocosNivel(*alturaUltimoAndar, blocos, numBlocos);
     *tempoInicio = GetTime();
 }
@@ -256,8 +231,14 @@ void GerarInimigo(float y) {
 }
 
 void SalvarRanking(int moedas, int tempo) {
+    NodoRanking *novo = malloc(sizeof(NodoRanking));
+    novo->moedas = moedas;
+    novo->tempo = tempo;
+    novo->prox = rankingHead;
+    rankingHead = novo;
+
     FILE *arquivo = fopen("ranking.txt", "a");
-    if (arquivo != NULL) {
+    if (arquivo) {
         fprintf(arquivo, "%d %d\n", moedas, tempo);
         fclose(arquivo);
     }
@@ -265,40 +246,16 @@ void SalvarRanking(int moedas, int tempo) {
 
 void MostrarRanking() {
     FILE *arquivo = fopen("ranking.txt", "r");
-    if (arquivo == NULL) {
+    if (!arquivo) {
         DrawText("Sem ranking disponível", 250, 300, 20, DARKGRAY);
         return;
     }
-
-    int moedas[100];
-    int tempos[100];
-    int count = 0;
-
-    while (fscanf(arquivo, "%d %d", &moedas[count], &tempos[count]) == 2 && count < 100) {
-        count++;
-    }
-    fclose(arquivo);
-
-    // Ordenar pelo menor tempo
-    for (int i = 0; i < count - 1; i++) {
-        for (int j = i + 1; j < count; j++) {
-            if (tempos[j] < tempos[i]) {
-                int tempT = tempos[i];
-                tempos[i] = tempos[j];
-                tempos[j] = tempT;
-
-                int tempM = moedas[i];
-                moedas[i] = moedas[j];
-                moedas[j] = tempM;
-            }
-        }
-    }
-
-    int y = 300;
-    for (int i = 0; i < count && i < 5; i++) {
+    int moedas, tempo, y = 300, pos = 1;
+    while (fscanf(arquivo, "%d %d", &moedas, &tempo) == 2 && pos <= 5) {
         char texto[200];
-        sprintf(texto, "%dº lugar - %ds - %d moedas", i + 1, tempos[i], moedas[i]);
+        sprintf(texto, "%dº lugar - %ds - %d moedas", pos++, tempo, moedas);
         DrawText(texto, 200, y, 20, DARKBLUE);
         y += 30;
     }
+    fclose(arquivo);
 }
